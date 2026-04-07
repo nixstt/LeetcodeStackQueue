@@ -5,19 +5,28 @@ from collections import deque
 class FreqStack:
 
     def __init__(self):
-        self.val_freq = deque()
+        self.val_freq = {}
+        self.freq_to_stack = {}
+        self.max_freq = 0
 
     def push(self, val: int) -> None:
-        freq = 0
-        for v, _ in self.val_freq:
-            if v == val:
-                freq += 1
-        self.val_freq.append((val, freq + 1))
+        freq = self.val_freq.get(val, 0) + 1
+        self.val_freq[val] = freq
+
+        if freq > self.max_freq:
+            self.max_freq = freq
+
+        if freq not in self.freq_to_stack:
+            self.freq_to_stack[freq] = deque()
+        self.freq_to_stack[freq].append(val)
 
     def pop(self) -> int:
-        max_freq = max(freq for _, freq in self.val_freq)
-        for i in range(len(self.val_freq) - 1, -1, -1):
-            if self.val_freq[i][1] == max_freq:
-                val = self.val_freq[i][0]
-                del self.val_freq[i]
-                return val
+        val = self.freq_to_stack[self.max_freq].pop()
+
+        if not self.freq_to_stack[self.max_freq]:
+            del self.freq_to_stack[self.max_freq]
+            self.max_freq -= 1
+
+        self.val_freq[val] -= 1
+
+        return val
